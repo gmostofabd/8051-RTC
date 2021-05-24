@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+	<link rel="stylesheet" href="assets/css/style.css">
+    <meta charset="utf-8">
+	<meta name="Keywords" content="Microcontroller,8051,Assembly,Programming,Code,Proteus">
+	<title>8051 RTC</title>
+</head>
+
+
+<body  bgcolor=white>
+
+	<div id="header_common"><img src="assets/images/github_banner.png" alt="common_header"></div>
+	<div id="topic_container"><h2>Exp. 10: RTC Interfacing with 8051</h2></div>
+
+
+  <table align = center width=1000 height=1000  bgcolor= white>
+	  <tr>
+	    <td width=200 bgcolor=white valign=top>
+
+		    <div id="exp_lst_cont">
+            <ol><h3>8051 Experiment List:</h3>
+              <li><a href="https://gmostofabd.github.io/8051-LED/">LED Blink</a></li>
+              <li><a href="https://gmostofabd.github.io/8051-Push-Button/">Push Button Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/8051-7Segment/">Seven Segment Display Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/8051-LED-Matrix/">LED Dot Matrix Display Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/8051-LCD/">LCD Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/8051-Analog/">Potentiometer (or Analog) Reading</a></li>
+                <li><a href="https://gmostofabd.github.io/8051-Keypad/">Key Pad Matrix Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/dc-motor-8051/">DC Motor Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/stepper-motor-8051/">Stepper Motor Interfacing</a></li>
+                <li><a href="https://gmostofabd.github.io/8051-RTC/">RTC Interfacing</a></li>
+                <li>EEPROM Interfacing</li>
+                <li>Bluetooth interfacing</li>
+                <li>7 Segment Clock</li>
+                <li>Serial Communication</li>
+            </ol>
+        </div>
+
+        <div id="proj_lst_cont">
+            <ol><h3>8051 Projects:</h3>
+              <li>Access Control System</li>
+              <li>6 Digit Clock</li>
+              <li>IR Remote Load ON OFF</li>
+              <li>Line Follower</li>
+              <li>Incubator Controller</li>
+            </ol>
+        </div>         
+
+    </td>
+
+
+
+	  <td width=600 align=center valign=top style="padding-left: 10px; padding-right: 10px;">
+		
+		<h3>Introduction:</h3>
+          <blockquote>
+		  <p>
+        We all know that most MCUs we use for our projects are time-agnostic; simply put 
+        they are unaware of the time around them. It’s OK for most of our projects but once 
+        in a while when you come across an idea where keeping time is a prime concern, 
+        RTC module is a savior. It’s perfect for projects containing data-logging, 
+        clock-building, time stamping, timers, alarms and any real time based automation's as well.
+
+         <br><br>There are different kinds of RTC module available in the market. We are 
+         using the most common RTC module that comes with the DS1307 from <strong>MAXIM</strong>. 
+         This application note provides information on how to interface a DS1307 real-time 
+         clock (RTC) to a 8051 microcontroller.
+	    </p>
+          </blockquote>
+
+        <h3>Hardware Discussion : RTC Chip DS1307</h3>
+	
+            <div class="box_70"><img src="assets/images/ds1307.png"/></div>
+            <div class="capt_cont">Fig: RTC Chip DS1307</div>
+
+
+
+
+      <h3>DS1307 Features :</h3>
+            
+      <ul>
+          <li>Real-time clock (RTC) counts seconds, minutes, hours, date of the month, 
+            month, day of the week, and year with leap-year compensation valid up to 2100</li>
+          <li>56-byte, battery-backed, nonvolatile (NV) RAM for data storage</li>
+          <li>Two-wire serial interface.</li>
+          <li>Programmable square wave output signal.</li> 
+          <li>Automatic power-fail detect and switch circuitry.</li>
+          <li>Consumes less than 500nA in battery backup mode with oscillator running.</li>
+          <li>Available in 8-pin DIP or SOIC.</li>
+          <li>Optional industrial temperature range: -40°C to +85°C</li>
+        </ul>
+
+      <h3>Pin Description :</h3>
+
+        <div class="box_80"><img src="assets/images/RTC-DS1307-Circuit1.png" alt="LCD mdules"></div>
+        <div class="capt_cont">Fig: DS1307 circuit</div>
+
+
+        <ul>
+          <li>Pin 1, 2 <strong>X1, X2</strong> : These are the pins used to connect an external 
+              crystal oscillator to provide the clock source for the chip. According to the 
+              datasheet quartz crystal of 32.768 kHz should be used along with this chip.</li>
+          <li>Pin 3 <strong>V BAT</strong> : This pin is used to connect a +3V lithium battery          
+              to provide supply when the external supply voltage is not available. This pin 
+              should be grounded when not in use.</li>
+          <li>Pin 5 <strong>SDA</strong>: Serial data input/output for the I2C serial interface.</li>
+          <li>Pin 5 <strong>SCL</strong>: Serial clock input. It is the I2C interface clock input 
+              and is used in data synchronization.</li>
+          <li>Pin 7 <strong>SQW/OUT</strong>: This output pin provides pulse ranging from 
+              frequency 1 kHz, 4kHz, 8 kHz or 32 kHz and needs a pull up resistor to operate.</li>
+          <li>Pin 8 <strong>Vcc</strong>: + 5V Supply.</li>
+        </ul>
+
+
+        <h3>DS1307 Memory Mapping :</h3>
+        <div class="box_80"><img src="assets/images/ds1307-table.jpg" alt="LCD mdules"></div>
+        <div class="capt_cont">Fig: RTC Memory Mapping</div>
+ 
+        <blockquote>
+          <p>
+            The DS1307 has a total of 64 bytes of RAM with address ranging from 00H  to 3FH 
+            where the first seven bytes are used for time values while the next byte is the 
+            control register which controls the SQW/OUT pin in the chip. The rest of the bytes 
+            from 08H to 3FH is available for general purpose data storage.
+          </p>
+          </blockquote>
+  
+
+        <h3>How Works ?</h3>
+
+        <blockquote>
+          <p>
+            <strong>Register Pointer</strong> : This DS1307 chip holds a register pointer that 
+            marks the byte that will be accessed next for the operation. After each read/write 
+            operation the register pointer is automatically incremented which is highly useful 
+            in multibyte read write.
+
+            <br><br>
+          </p>
+          </blockquote>
+
+          <h3>Time Format in RTC DS1307</h3>
+          <blockquote>
+            <p>
+              The data such as time, minute, year etc are given stored in the BCD format. 
+              As you can see in the address mapping that each byte was allotted to values 
+              such as seconds, minute, hour,day, month and year. Since the representation 
+              of data was in BCD format the lower four bits count up to where as top four/three 
+              bits count the rest of the data values.
+            </p>
+          </blockquote>
+
+
+          <h3>Writing to or Reading from DS1307</h3>
+          <blockquote>
+            <p>
+              In order to perform the read or write operation in the DS1307 you need to follow the below steps.
+            </p>
+          </blockquote>
+
+
+          <ul>
+            <li>To access DS1307 we need to transmit the address of the chip + direction bit which specifies 
+                the read or write operation right after the START condition is initiated by the controller.</li>
+            <li>Transmit the address DS1307  1101000 (will be specified in the datasheet) + “0” bit for 
+                write operation or “1” for read operation.</li>
+            <li>You can set the register pointer address by transmitting the respective data byte address 
+                from 00H to 06H and then the read/write operation can be performed.</li>
+            <li>Remember that the value of the register pointer will be automatically incremented which 
+                will help for multiple read or write operations.</li> 
+          </ul>
+  
+
+
+
+
+
+
+
+
+          <h3>Circuit Diagram :</h3>
+        <div class="box_ckt_diag"><img src="assets/images/RTC_LCD_8051_Ckt.png" alt="ckt_diagram" width="600" height="350"></div>
+        <div class="capt_cont">Fig: RTC 8051 Circuit</div>
+
+ 
+        <h3>Circuit Discussion :</h3>
+
+        <blockquote>
+            <p>AT89S52 is a typical 8051 microcontroller manufactured by Atmel. Interfacing an 
+              RTC module to 8051 microcontroller is pretty simple. You only need to make 2 
+              connections between the RTC module and 8051. So lets get to business!
+
+              <br><br>The DS1307 operates as a slave device on the serial bus. Access is 
+              obtained by implementing a START condition and providing a device identification 
+              code followed by a register address. Subsequent registers can be accessed 
+              sequentially until a STOP condition is executed. The START and STOP conditions 
+              are generated using the low level drives, SEND\_START and SEND\_STOP found in 
+              the attached DS5000 code. Also the subroutines SEND\_BYTE and READ\_BYTE provide 
+              the 2-wire handshaking required for writing and reading 8-bit words to and from the DS1307.
+            </p>
+            </blockquote>
+
+
+        <h3>Assembly Program : <a href="https://github.com/gmostofabd/8051-7Segment/blob/main/codes/7seg_1d_8051.asm">rtc_ds1307_lcd_8051.asm</a></h3>
+        <div class="prog_cont"><embed type="text/html" src="codes/RTC_LCD_8051_9.asm"  width="500" height="500"></div>
+
+        <h3>Code Discussion:</h3>
+            <blockquote>
+            <p>
+            </p>
+            </blockquote>
+
+
+      </td>
+
+	  <td valign=top>
+		
+      <div class="box_this_lesson">
+        <h3>This lesson includes:</h3>
+        <ol>
+          <li>Introduction</li>
+          <li>Hardware Discussion</li>
+          <li>Circuit Diagram</li>
+          <li>Assembly Code</li>
+          <li>Post Run Discussion</li>
+          <li>Exercises</li>
+          <li>Tips and Tricks</li>
+        </ol>
+      </div>
+
+
+      <div class="vdo_lst_cont">
+          <h3>Lesson Video</h3>
+          <iframe width="155" height="100"
+          src="https://www.youtube.com/embed/tgbNymZ7vqY">
+            </iframe>
+      </div>
+
+      <div class="box_this_lesson">
+          <h3>Important Downloads</h3>
+          <ol class="inside">
+            <li>Proteus 8.7</li>
+            <li>MIDE-51 IDE</li>
+            <li>AVRDUDES</li>
+          </ol>
+      </div>
+
+
+      <div class="box_this_lesson">
+          <span><b>Lesson Contents</b></span>
+          <ol>
+              <li>Circuit Diagram (Proteus)</li>
+              <li>Lesson PDF</li>
+              <li>7seg_1d_8051.asm</li>
+              <li>7seg_2d_8051.asm</li>
+              <li>7segment Datasheet PDF</li>
+              <li>Exercise Solutions</li>
+          </ol>
+      </div>
+
+    </td>
+
+
+	</tr>
+         
+  </table>
+
+  <table width=1000 height=50 align= center border="1">
+	  <tr>
+			<td>Prev topic: Push Button Interfacing with 8051</td>
+			<td>Next topic: LED Matrix interfacing with 8051</td>
+		</tr>
+  </table>
+
+	<div id="footer_common">
+    <div class="prj_footer_cell">
+      <font face="Verdana, Arial, Helvetica, sans-serif" color="#0000ff" size="2" ><strong>Top Tutorial sites </strong></font>
+      <div id="navcontainer">
+        <ul >
+          <li id="active"><a href="http://www.melab-bd.com/home.html"><strong>Circuit Today</strong></a></li>
+          <li><a href="http://www.melab-bd.com/about.html"><strong>Radio Electronics</strong></a></li>
+          <li><a href="http://www.melab-bd.com/product.html"><strong>MikroE</strong></a></li>
+          <li><a href="http://www.melab-bd.com/project.html"><strong>8051 Projects</strong></a></li>
+          <li><a href="http://www.melab-bd.com/trainings.html"><strong>101 Components</strong></a></li>
+         </ul>
+      </div>	
+    </div>
+  </div>
+    
+
+</body>
+
+
+</html>
